@@ -17,10 +17,10 @@ class MapsTab(QWidget):
         self.query.textEdited.connect(self.refresh_debounce) # type: ignore
 
         self.add_button = QPushButton("Add")
-        self.add_button.clicked.connect(self.add) # type: ignore
+        self.add_button.clicked.connect(self.on_add) # type: ignore
 
         self.list_widget = QListWidget()
-        self.list_widget.itemDoubleClicked.connect(self.edit) # type: ignore
+        self.list_widget.itemDoubleClicked.connect(self.on_edit) # type: ignore
 
         self.debounce_timer = QTimer()
         self.debounce_timer.setSingleShot(True)
@@ -46,19 +46,14 @@ class MapsTab(QWidget):
             item.setData(Qt.ItemDataRole.UserRole, m)
             self.list_widget.addItem(item)
 
-    def add(self):
+    def on_add(self):
         map_item = Map(id=0, name=self.query.text().strip())
-        dialog = MapDialog(item=map_item)
+        dialog = MapDialog(item=map_item, action=APP_CONTEXT.maps_service.add)
         if dialog.exec():
-            new = dialog.get_result()
-            APP_CONTEXT.maps_service.add(new)
             self.refresh()
 
-    def edit(self, item: QListWidgetItem):
+    def on_edit(self, item: QListWidgetItem):
         map_item = item.data(Qt.ItemDataRole.UserRole)
-        dialog = MapDialog(item=map_item)
+        dialog = MapDialog(item=map_item, action=APP_CONTEXT.maps_service.update)
         if dialog.exec():
-            updated = dialog.get_result()
-            APP_CONTEXT.maps_service.update(updated)
-            item.setText(updated.name)
-            item.setData(Qt.ItemDataRole.UserRole, updated)
+            self.refresh()

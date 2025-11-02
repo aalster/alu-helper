@@ -1,8 +1,4 @@
-from PyQt6.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
-    QPushButton, QMessageBox
-)
-from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton
 
 from alu_helper.services.maps import Map
 from alu_helper.views.components import ValidatedLineEdit
@@ -11,9 +7,10 @@ from alu_helper.views.components import ValidatedLineEdit
 class MapDialog(QDialog):
     result: Map
 
-    def __init__(self, parent=None, item: Map = Map(id=0, name="")):
+    def __init__(self, item: Map, action, parent=None):
         super().__init__(parent)
         self.item = item
+        self.action = action
 
         self.setWindowTitle("Edit Map" if item.id else "Add Map")
         self.setModal(True)
@@ -23,6 +20,9 @@ class MapDialog(QDialog):
 
         self.save_button = QPushButton("Ok")
         self.cancel_button = QPushButton("Cancel")
+
+        self.error_label = QLabel()
+        self.error_label.setStyleSheet("color: red;")
 
         self.save_button.clicked.connect(self.accept) # type: ignore
         self.cancel_button.clicked.connect(self.reject) # type: ignore
@@ -39,17 +39,22 @@ class MapDialog(QDialog):
         layout = QVBoxLayout()
         layout.addLayout(form_layout)
         layout.addStretch(1)
+        layout.addWidget(self.error_label)
         layout.addLayout(buttons_layout)
         self.setLayout(layout)
 
     def accept(self):
+        self.error_label.clear()
         name = self.name_edit.text()
         if not name:
             self.name_edit.set_error()
             return
 
-        self.result = Map(id=self.item.id, name=name)
-        super().accept()
+        result = Map(id=self.item.id, name=name)
+        try:
+            self.action(result)
+        except Exception as e:
+            self.error_label.setText(str(e))
+            return
 
-    def get_result(self) -> Map:
-        return self.result
+        super().accept()
