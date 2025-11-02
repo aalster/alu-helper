@@ -1,5 +1,4 @@
 from alu_helper.database import connect
-from alu_helper.models import TrackEditModel
 from pydantic import BaseModel
 
 from alu_helper.services.maps import MapsService
@@ -10,12 +9,15 @@ class Track(BaseModel):
     map_id: int
     name: str
 
+class TrackView(Track):
+    map_name: str
+
 class TracksRepository:
     @staticmethod
     def parse(row):
         return Track(**row) if row else None
 
-    def add(self, model: TrackEditModel):
+    def add(self, model: Track):
         with connect() as conn:
             conn.execute("INSERT INTO tracks (map_id, name) VALUES (:map_id, :name)", model.model_dump())
 
@@ -40,7 +42,7 @@ class TracksService:
         self.repo = repo
         self.maps = maps
 
-    def add(self, model: TrackEditModel):
+    def add(self, model: TrackView):
         if model.map_id <= 0:
             model.map_id = self.maps.get_id_by_name(model.map_name)
         self.repo.add(model)
@@ -48,5 +50,8 @@ class TracksService:
     def update(self, item: Track):
         self.repo.update(item)
 
-    def get_all(self, query: str = "") -> list[Track]:
-        return self.repo.get_all(query.strip())
+    def get_all(self, query: str = "") -> list[TrackView]:
+        tracks = self.repo.get_all(query.strip())
+        maps_ids = {t.map_id for t in tracks}
+        maps = self.maps.get_by_ids(maps_ids)
+        return [TrackView(**t.model_dump(), map_name=maps[t.map_id].name if t.map_id in maps else "Not Found") for t in tracks]

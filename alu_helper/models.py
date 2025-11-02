@@ -9,14 +9,6 @@ class PageResult(GenericModel, Generic[T]):
     items: list[T]
     total: int
 
-
-class TrackEditModel(BaseModel):
-    id: int
-    map_id: int
-    map_name: str
-    name: str
-
-
 class RaceAddModel(BaseModel):
     track_id: int
     car_id: int

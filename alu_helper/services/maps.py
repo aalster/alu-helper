@@ -38,6 +38,13 @@ class MapsRepository:
         with connect() as conn:
             conn.execute("UPDATE maps SET name = :name WHERE id = :id", item.model_dump())
 
+    def get_by_ids(self, maps_ids):
+        ids = ", ".join(str(id) for id in maps_ids)
+
+        with connect() as conn:
+            rows = conn.execute(f"SELECT * FROM maps WHERE id in ({ids})").fetchall()
+            return [self.parse(row) for row in rows]
+
 
 class MapsService:
     def __init__(self, repo: MapsRepository):
@@ -54,3 +61,9 @@ class MapsService:
 
     def update(self, item: Map):
         self.repo.update(item)
+
+    def get_by_ids(self, maps_ids: set[int]) -> dict[int, Map]:
+        if not maps_ids:
+            return dict()
+        items = self.repo.get_by_ids(maps_ids)
+        return {m.id: m for m in items}

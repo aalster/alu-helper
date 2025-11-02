@@ -4,24 +4,22 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QListWidget, QLin
     QLabel, QCompleter
 
 from alu_helper.app_context import APP_CONTEXT
-from alu_helper.models import TrackEditModel
-from alu_helper.services.maps import Map
-from alu_helper.services.tracks import Track
+from alu_helper.services.tracks import TrackView
 from alu_helper.views.components import EditDialog, ValidatedLineEdit
 
 
 class TrackDialog(EditDialog):
-    def __init__(self, item: TrackEditModel, action, parent=None):
+    def __init__(self, item: TrackView, action, parent=None):
         self.item = item
 
-        self.map_edit = ValidatedLineEdit(item.name)
+        self.map_edit = ValidatedLineEdit(item.map_name)
         self.name_edit = ValidatedLineEdit(item.name)
 
         self.maps_completer = QCompleter([])
         self.maps_completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.maps_completer.setFilterMode(Qt.MatchFlag.MatchContains)
         self.maps_completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
-        self.maps_completer.activated.connect(self.on_maps_completer_activated)
+        self.maps_completer.activated.connect(self.on_maps_completer_activated) # type: ignore
         self.map_edit.get_input().setCompleter(self.maps_completer)
 
         super().__init__(action, parent)
@@ -72,7 +70,7 @@ class TrackDialog(EditDialog):
             self.map_edit.set_error()
             return None
 
-        return TrackEditModel(id=self.item.id, map_id=0, map_name=map_name, name=name)
+        return TrackView(id=self.item.id, map_id=0, map_name=map_name, name=name)
 
 
 class TracksTab(QWidget):
@@ -110,19 +108,18 @@ class TracksTab(QWidget):
     def refresh(self):
         self.list_widget.clear()
         for t in APP_CONTEXT.tracks_service.get_all(self.query.text()):
-            item = QListWidgetItem(f"{t.map_id}: {t.name}")
+            item = QListWidgetItem(f"{t.id}: {t.map_name} - {t.name}")
             item.setData(Qt.ItemDataRole.UserRole, t)
             self.list_widget.addItem(item)
 
     def on_add(self):
-        track = TrackEditModel(id=0, map_id=0, map_name="AAAA", name=self.query.text().strip())
+        track = TrackView(id=0, map_id=0, map_name="", name=self.query.text().strip())
         dialog = TrackDialog(item=track, action=APP_CONTEXT.tracks_service.add)
         if dialog.exec():
             self.refresh()
 
     def on_edit(self, item: QListWidgetItem):
-        track_view = item.data(Qt.ItemDataRole.UserRole)
-        track = TrackEditModel(id=track_view.id, map_id=track_view.map_id, map_name=track_view.map_name, name=track_view.name)
+        track = item.data(Qt.ItemDataRole.UserRole)
         dialog = TrackDialog(item=track, action=APP_CONTEXT.tracks_service.update)
         if dialog.exec():
             self.refresh()
