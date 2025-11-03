@@ -21,12 +21,17 @@ class RaceDialog(EditDialog):
 
         self.tracks_completer = ItemCompleter(
             self.track_edit.get_input(),
-            lambda q: [f"{i.map_name} - {i.name}" for i in APP_CONTEXT.tracks_service.autocomplete(q)]
+            APP_CONTEXT.tracks_service.autocomplete,
+            lambda i: f"{i.map_name} - {i.name}",
+            False
         )
+        self.tracks_completer.set_selected_item(TrackView(id=item.track_id, name=item.track_name, map_name=item.map_name))
 
         self.cars_completer = ItemCompleter(
             self.car_edit.get_input(),
-            lambda q: [i.name for i in APP_CONTEXT.cars_service.autocomplete(q)]
+            APP_CONTEXT.cars_service.autocomplete,
+            lambda i: i.name,
+            self.on_car_selected
         )
 
         super().__init__(action, parent)
@@ -43,24 +48,28 @@ class RaceDialog(EditDialog):
 
         return form_layout
 
-    def showEvent(self, event):
-        super().showEvent(event)
-        self.track_edit.setFocus()
+    def on_car_selected(self, car):
+        self.rank_edit.set_text(str(car.rank) if car and car.rank >= 0 else "")
 
     def prepare_item(self):
-        track_name = self.track_edit.text()
-        if not track_name:
-            self.track_edit.set_error()
-            return None
-
-        car_name = self.car_edit.text().strip()
-        if not car_name:
-            self.car_edit.set_error()
-            return None
-
+        track_id = self.tracks_completer.get_selected_item().id if self.tracks_completer.get_selected_item() else 0
+        car_id = self.cars_completer.get_selected_item().id if self.cars_completer.get_selected_item() else 0
+        car_name = self.car_edit.text()
         rank = int(self.rank_edit.text()) if self.rank_edit.text() else 0
 
-        return RaceView(id=self.item.id, track_name=track_name, car_name=car_name, rank=rank)
+        error = False
+        if track_id <= 0:
+            self.track_edit.set_error()
+            error = True
+
+        if not car_name:
+            self.car_edit.set_error()
+            error = True
+
+        if error:
+            return None
+
+        return RaceView(id=self.item.id, track_id=track_id, car_id=car_id, car_name=car_name, rank=rank)
 
 
 class RacesTab(QWidget):

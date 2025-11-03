@@ -28,17 +28,13 @@ class CarDialog(EditDialog):
 
         return form_layout
 
-    def showEvent(self, event):
-        super().showEvent(event)
-        self.name_edit.setFocus()
-
     def prepare_item(self):
         name = self.name_edit.text()
+        rank = int(self.rank_edit.text()) if self.rank_edit.text() else 0
+
         if not name:
             self.name_edit.set_error()
             return None
-
-        rank = int(self.rank_edit.text()) if self.rank_edit.text() else 0
 
         return Car(id=self.item.id, name=name, rank=rank)
 

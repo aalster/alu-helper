@@ -17,7 +17,8 @@ class TrackDialog(EditDialog):
 
         self.maps_completer = ItemCompleter(
             self.map_edit.get_input(),
-            lambda q: [i.name for i in APP_CONTEXT.maps_service.autocomplete(q)]
+            APP_CONTEXT.maps_service.autocomplete,
+            lambda i: i.name
         )
 
         super().__init__(action, parent)
@@ -32,22 +33,24 @@ class TrackDialog(EditDialog):
 
         return form_layout
 
-    def showEvent(self, event):
-        super().showEvent(event)
-        self.map_edit.setFocus()
-
     def prepare_item(self):
-        name = self.name_edit.text()
-        if not name:
-            self.name_edit.set_error()
-            return None
-
+        map_id = self.maps_completer.get_selected_item().id if self.maps_completer.get_selected_item() else 0
         map_name = self.map_edit.text()
+        name = self.name_edit.text()
+
+        error = False
         if not map_name:
             self.map_edit.set_error()
+            error = True
+
+        if not name:
+            self.name_edit.set_error()
+            error = True
+
+        if error:
             return None
 
-        return TrackView(id=self.item.id, map_id=0, map_name=map_name, name=name)
+        return TrackView(id=self.item.id, map_id=map_id, map_name=map_name, name=name)
 
 
 class TracksTab(QWidget):

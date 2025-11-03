@@ -23,10 +23,6 @@ class MapDialog(EditDialog):
 
         return form_layout
 
-    def showEvent(self, event):
-        super().showEvent(event)
-        self.name_edit.setFocus()
-
     def prepare_item(self):
         name = self.name_edit.text()
         if not name:
