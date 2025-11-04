@@ -1,3 +1,8 @@
+create table settings (
+    key   varchar(100) primary key,
+    value varchar(255)
+);
+
 create table maps (
     id         integer primary key autoincrement,
     name       varchar(255) not null default '',
@@ -29,9 +34,9 @@ create unique index cars_name_uindex
 
 create table races (
     id         integer primary key autoincrement,
-    track_id   integer      not null,
-    car_id     integer not null default 0,
-    rank       integer not null default 0,
-    time       integer not null default 0,
-    created_at datetime     not null default current_timestamp
+    track_id   integer  not null,
+    car_id     integer  not null default 0,
+    rank       integer  not null default 0,
+    time       integer  not null default 0,
+    created_at datetime not null default current_timestamp
 );
