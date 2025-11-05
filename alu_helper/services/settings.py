@@ -4,6 +4,8 @@ from pydantic import BaseModel
 
 class Settings(BaseModel):
     initial_data_loaded: bool = False
+    window_geometry: str = ""
+    window_state: str = ""
 
 class SettingsRepository:
 
