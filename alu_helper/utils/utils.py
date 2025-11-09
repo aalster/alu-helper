@@ -1,6 +1,10 @@
 import os
 import sys
 
+from PyQt6 import QtCore
+from PyQt6.QtCore import QIODeviceBase
+
+
 def get_resource_path(relative_path: str) -> str:
     if hasattr(sys, '_MEIPASS'):
         base_path = sys._MEIPASS
@@ -37,6 +41,14 @@ def parse_time(time: str) -> int:
         return (minutes * 60 + seconds) * 1000 + millis
     except ValueError:
         return None
+
+def pixmap_to_bytes(pixmap, format_="PNG"):
+    ba = QtCore.QByteArray()
+    buff = QtCore.QBuffer(ba)
+    buff.open(QIODeviceBase.OpenModeFlag.WriteOnly)
+    ok = pixmap.save(buff, format_)
+    assert ok
+    return ba.data()
 
 # for test in ["01:02.300", "1:02.3", "1:2.3", "02.3", "1:02", "02", "2"]:
 #     print(test + " -> " + str(parse_time(test)) + " -> " + format_time(parse_time(test)))

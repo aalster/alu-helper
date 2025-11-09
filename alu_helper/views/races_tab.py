@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QListWidget, QLin
 from alu_helper.app_context import APP_CONTEXT
 from alu_helper.services.races import RaceView
 from alu_helper.services.tracks import TrackView
-from alu_helper.services.utils import format_time, time_format_regex, parse_time
+from alu_helper.utils.utils import format_time, time_format_regex, parse_time
 from alu_helper.views.components import EditDialog, ValidatedLineEdit, ItemCompleter, InputDebounce
 
 

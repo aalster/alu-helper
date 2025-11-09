@@ -5,10 +5,11 @@ from PyQt6.QtGui import QIcon, QAction
 from PyQt6.QtWidgets import QTabWidget, QMainWindow, QSystemTrayIcon, QMenu, QApplication, QStyle
 
 from alu_helper.app_context import APP_CONTEXT
-from alu_helper.services.utils import get_resource_path
+from alu_helper.utils.utils import get_resource_path
 from alu_helper.views.cars_tab import CarsTab
 from alu_helper.views.maps_tab import MapsTab
 from alu_helper.views.races_tab import RacesTab
+from alu_helper.views.recognize_races_tab import RecognizeRacesTab
 from alu_helper.views.settings_tab import SettingsTab
 from alu_helper.views.tracks_tab import TracksTab
 
@@ -23,6 +24,7 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(500, 600)
         self.restore_window_state()
 
+        self.recognize_races_tab = RecognizeRacesTab()
         self.races_tab = RacesTab()
         self.tracks_tab = TracksTab()
         self.maps_tab = MapsTab()
@@ -32,6 +34,7 @@ class MainWindow(QMainWindow):
         self.tabs = QTabWidget()
         self.setCentralWidget(self.tabs)
         self.tabs.currentChanged.connect(self.tab_selected) # type: ignore
+        self.tabs.addTab(self.recognize_races_tab, "Recognize races")
         self.tabs.addTab(self.races_tab, "Races")
         self.tabs.addTab(self.tracks_tab, "Tracks")
         self.tabs.addTab(self.maps_tab, "Maps")
@@ -68,7 +71,7 @@ class MainWindow(QMainWindow):
 
     def tab_selected(self, idx):
         tab = self.tabs.widget(idx)
-        if tab.refresh:
+        if hasattr(tab, 'refresh'):
             tab.refresh()
 
     def closeEvent(self, event):
