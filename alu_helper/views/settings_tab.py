@@ -8,12 +8,10 @@ class SettingsTab(QWidget):
         super().__init__()
         self.refresh_tray_icon = refresh_tray_icon if refresh_tray_icon else lambda _: None
 
-        self.show_tray_icon = QCheckBox()
+        self.show_tray_icon = QCheckBox("Show tray icon")
         self.show_tray_icon.checkStateChanged.connect(self.refresh_close_to_tray) # type: ignore
-        self.show_tray_icon.setText("Show tray icon")
 
-        self.close_to_tray = QCheckBox()
-        self.close_to_tray.setText("Close to tray")
+        self.close_to_tray = QCheckBox("Close to tray")
 
         self.save_button = QPushButton("Save")
         self.save_button.clicked.connect(self.on_save) # type: ignore
@@ -45,7 +43,7 @@ class SettingsTab(QWidget):
     def on_save(self):
         settings = APP_CONTEXT.settings.get()
         settings.show_tray_icon = self.show_tray_icon.isChecked()
-        settings.close_to_tray = self.close_to_tray.isEnabled() and self.close_to_tray.isChecked()
+        settings.close_to_tray = self.close_to_tray.isChecked()
         APP_CONTEXT.settings.save(settings)
         self.refresh()
         self.refresh_tray_icon(settings.show_tray_icon)
