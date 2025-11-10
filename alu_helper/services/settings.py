@@ -11,6 +11,7 @@ class Settings(BaseModel):
 
     show_tray_icon: bool = False
     close_to_tray: bool = False
+    start_minimized: bool = False
 
     daily_gift_link: str = "https://shop.gameloft.com/games/Asphalt_Unite"
     daily_gift_timer: bool = False

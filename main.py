@@ -10,6 +10,8 @@ from alu_helper.database import init_db
 
 
 def main():
+    start_minimized = "--minimized" in sys.argv
+
     window: MainWindow | None = None
 
     def show_window():
@@ -37,7 +39,10 @@ def main():
     app.setFont(font)
 
     window = MainWindow()
-    window.show()
+    if window.tray_icon and settings.close_to_tray and (start_minimized or settings.start_minimized):
+        window.hide()
+    else:
+        window.show()
     sys.exit(app.exec())
 
 if __name__ == "__main__":
