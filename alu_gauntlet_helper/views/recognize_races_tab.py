@@ -6,7 +6,8 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QChe
 
 from alu_gauntlet_helper.app_context import APP_CONTEXT
 from alu_gauntlet_helper.utils.utils import pixmap_to_bytes
-from alu_gauntlet_helper.screen_recognition.recognition import find_rectangles, find_race_boxes
+from alu_gauntlet_helper.screen_recognition.recognition import find_rectangles, find_race_boxes, \
+    recognize_text_in_rectangle
 
 
 class RecognizeRacesTab(QWidget):
@@ -52,6 +53,10 @@ class RecognizeRacesTab(QWidget):
             Qt.AspectRatioMode.KeepAspectRatio,
             Qt.TransformationMode.SmoothTransformation
         )
-
         self.preview_label.setPixmap(thumbnail)
-        print(find_race_boxes(pixmap_to_bytes(thumbnail)))
+
+        race_boxes = find_race_boxes(pixmap_to_bytes(pixmap))
+        print(f"Found {len(race_boxes)} race boxes:")
+        for race_box in race_boxes:
+            print(race_box)
+
