@@ -53,7 +53,7 @@ class EditDialog(QDialog):
         super().__init__(parent)
         self.action = action
         self.setModal(True)
-        self.setMinimumSize(300, 150)
+        self.setMinimumSize(300, 180)
 
         self.error_label = QLabel()
         self.error_label.setStyleSheet("color: red;")
@@ -195,7 +195,17 @@ class InputDebounce:
         self.timer.setSingleShot(True)
         self.timer.timeout.connect(on_change) # type: ignore
 
-        self.input_.textEdited.connect(self.start) # type: ignore
+        self.input_.textChanged.connect(self.start) # type: ignore
 
     def start(self):
         self.timer.start(self.debounce_time)
+
+class ClearOnEscEventFilter(QObject):
+    def eventFilter(self, obj, event):
+        if isinstance(obj, QLineEdit) and event.type() == QEvent.Type.KeyPress:
+            if event.key() == Qt.Key.Key_Escape:
+                obj.clear()
+                return True
+        return super().eventFilter(obj, event)
+
+CLEAR_ON_ESC_FILTER = ClearOnEscEventFilter()

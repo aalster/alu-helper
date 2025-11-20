@@ -2,13 +2,14 @@
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QIntValidator
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QListWidget, QLineEdit, QListWidgetItem, QHBoxLayout, \
-    QLabel, QCompleter, QDateTimeEdit, QTimeEdit
+    QLabel, QCompleter, QDateTimeEdit, QTimeEdit, QCheckBox, QTextEdit, QFormLayout
 
 from alu_gauntlet_helper.app_context import APP_CONTEXT
 from alu_gauntlet_helper.services.races import RaceView
 from alu_gauntlet_helper.services.tracks import TrackView
 from alu_gauntlet_helper.utils.utils import format_time, time_format_regex, parse_time
-from alu_gauntlet_helper.views.components import EditDialog, ValidatedLineEdit, ItemCompleter, InputDebounce
+from alu_gauntlet_helper.views.components import EditDialog, ValidatedLineEdit, ItemCompleter, InputDebounce, \
+    ClearOnEscEventFilter, CLEAR_ON_ESC_FILTER
 
 
 class RaceDialog(EditDialog):
@@ -20,6 +21,9 @@ class RaceDialog(EditDialog):
         self.rank_edit = ValidatedLineEdit(str(item.rank) if item.rank else "")
         self.rank_edit.get_input().setValidator(QIntValidator(0, 10000))
         self.time_edit = ValidatedLineEdit(format_time(item.time), placeholder="mm:ss.xxx", regex=time_format_regex)
+        self.bad_timing_checkbox = QCheckBox("Bad timing")
+        self.bad_timing_checkbox.setChecked(item.bad_timing)
+        self.note_edit = QTextEdit(item.note)
 
         self.tracks_completer = ItemCompleter(
             self.track_edit.get_input(),
@@ -40,15 +44,13 @@ class RaceDialog(EditDialog):
         self.setWindowTitle("Edit Race" if item.id else "Add Race")
 
     def prepare_layout(self):
-        form_layout = QVBoxLayout()
-        form_layout.addWidget(QLabel("Track:"))
-        form_layout.addWidget(self.track_edit)
-        form_layout.addWidget(QLabel("Car:"))
-        form_layout.addWidget(self.car_edit)
-        form_layout.addWidget(QLabel("Rank:"))
-        form_layout.addWidget(self.rank_edit)
-        form_layout.addWidget(QLabel("Time:"))
-        form_layout.addWidget(self.time_edit)
+        form_layout = QFormLayout()
+        form_layout.addRow("Track:", self.track_edit)
+        form_layout.addRow("Car:", self.car_edit)
+        form_layout.addRow("Rank:", self.rank_edit)
+        form_layout.addRow("Time:", self.time_edit)
+        form_layout.addWidget(self.bad_timing_checkbox)
+        form_layout.addRow("Note:", self.note_edit)
 
         return form_layout
 
@@ -61,6 +63,8 @@ class RaceDialog(EditDialog):
         car_name = self.car_edit.text()
         rank = int(self.rank_edit.text()) if self.rank_edit.text() else 0
         time = parse_time(self.time_edit.text())
+        bad_timing = self.bad_timing_checkbox.isChecked()
+        note = self.note_edit.toPlainText()
 
         error = False
         if track_id <= 0:
@@ -77,7 +81,8 @@ class RaceDialog(EditDialog):
 
         if error:
             return None
-        return RaceView(id=self.item.id, track_id=track_id, car_id=car_id, car_name=car_name, rank=rank, time=time)
+        return RaceView(id=self.item.id, track_id=track_id, car_id=car_id, car_name=car_name, rank=rank,
+                        time=time, bad_timing=bad_timing, note=note)
 
 
 class RacesTab(QWidget):
@@ -86,11 +91,13 @@ class RacesTab(QWidget):
 
         self.track_query = QLineEdit()
         self.track_query.setClearButtonEnabled(True)
+        self.track_query.installEventFilter(CLEAR_ON_ESC_FILTER)
         self.track_query.setPlaceholderText("Filter by track")
         self.track_debounce = InputDebounce(self.track_query, on_change=self.refresh)
 
         self.car_query = QLineEdit()
         self.car_query.setClearButtonEnabled(True)
+        self.car_query.installEventFilter(CLEAR_ON_ESC_FILTER)
         self.car_query.setPlaceholderText("Filter by car")
         self.car_debounce = InputDebounce(self.car_query, on_change=self.refresh)
 
@@ -121,9 +128,9 @@ class RacesTab(QWidget):
             self.list_widget.addItem(item)
 
     def on_add(self):
-        if RaceDialog(item=RaceView(), action=APP_CONTEXT.races_service.save).exec():
+        if RaceDialog(item=RaceView(), action=APP_CONTEXT.races_service.save, parent=self).exec():
             self.refresh()
 
     def on_edit(self, item: QListWidgetItem):
-        if RaceDialog(item=item.data(Qt.ItemDataRole.UserRole), action=APP_CONTEXT.races_service.save).exec():
+        if RaceDialog(item=item.data(Qt.ItemDataRole.UserRole), action=APP_CONTEXT.races_service.save, parent=self).exec():
             self.refresh()

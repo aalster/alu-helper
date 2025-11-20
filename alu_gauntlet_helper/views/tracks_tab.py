@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QListWidget, QLin
 
 from alu_gauntlet_helper.app_context import APP_CONTEXT
 from alu_gauntlet_helper.services.tracks import TrackView
-from alu_gauntlet_helper.views.components import EditDialog, ValidatedLineEdit, ItemCompleter
+from alu_gauntlet_helper.views.components import EditDialog, ValidatedLineEdit, ItemCompleter, CLEAR_ON_ESC_FILTER
 
 
 class TrackDialog(EditDialog):
@@ -59,8 +59,9 @@ class TracksTab(QWidget):
 
         self.query = QLineEdit()
         self.query.setClearButtonEnabled(True)
+        self.query.installEventFilter(CLEAR_ON_ESC_FILTER)
         self.query.setPlaceholderText("Filter by name")
-        self.query.textEdited.connect(self.refresh_debounce) # type: ignore
+        self.query.textChanged.connect(self.refresh_debounce) # type: ignore
 
         self.add_button = QPushButton("Add")
         self.add_button.clicked.connect(self.on_add) # type: ignore
@@ -93,9 +94,9 @@ class TracksTab(QWidget):
             self.list_widget.addItem(item)
 
     def on_add(self):
-        if TrackDialog(item=TrackView(name=self.query.text().strip()), action=APP_CONTEXT.tracks_service.save).exec():
+        if TrackDialog(item=TrackView(name=self.query.text().strip()), action=APP_CONTEXT.tracks_service.save, parent=self).exec():
             self.refresh()
 
     def on_edit(self, item: QListWidgetItem):
-        if TrackDialog(item=item.data(Qt.ItemDataRole.UserRole), action=APP_CONTEXT.tracks_service.save).exec():
+        if TrackDialog(item=item.data(Qt.ItemDataRole.UserRole), action=APP_CONTEXT.tracks_service.save, parent=self).exec():
             self.refresh()

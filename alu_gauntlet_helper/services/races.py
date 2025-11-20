@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, validator, field_validator
+from pydantic import BaseModel, field_validator
 
 from alu_gauntlet_helper.database import connect
 from alu_gauntlet_helper.services.cars import CarsService, Car
@@ -13,6 +13,8 @@ class Race(BaseModel):
     car_id: int = 0
     rank: int = 0
     time: int = 0
+    bad_timing: bool = False
+    note: str = ""
     created_at: datetime | None = None
 
     @field_validator("created_at", mode="before")
@@ -38,7 +40,9 @@ class RacesRepository:
 
     def add(self, item: Race):
         with connect() as conn:
-            conn.execute("INSERT INTO races (track_id, car_id, `rank`, time) VALUES (:track_id, :car_id, :rank, :time)",
+            conn.execute("INSERT INTO races"
+                         " (track_id, car_id, `rank`, time, bad_timing, note) VALUES"
+                         " (:track_id, :car_id, :rank, :time, :bad_timing, :note)",
                          item.model_dump())
 
     def get_all(self, track_query: str, car_query: str):
@@ -62,7 +66,9 @@ class RacesRepository:
 
     def update(self, item: Race):
         with connect() as conn:
-            conn.execute("UPDATE races SET track_id = :track_id, car_id = :car_id, `rank` = :rank, time = :time"
+            conn.execute("UPDATE races SET"
+                         " track_id = :track_id, car_id = :car_id, `rank` = :rank, time = :time,"
+                         " bad_timing = :bad_timing, note = :note"
                          " WHERE id = :id", item.model_dump())
 
 class RacesService:
