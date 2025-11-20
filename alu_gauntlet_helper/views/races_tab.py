@@ -1,22 +1,22 @@
 # gui/maps_tab.py
 from PyQt6.QtCore import QTimer, Qt
-from PyQt6.QtGui import QIntValidator
+from PyQt6.QtGui import QIntValidator, QIcon, QPixmap, QFont
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QListWidget, QLineEdit, QListWidgetItem, QHBoxLayout, \
-    QLabel, QCompleter, QDateTimeEdit, QTimeEdit, QCheckBox, QTextEdit, QFormLayout
+    QLabel, QCompleter, QDateTimeEdit, QTimeEdit, QCheckBox, QTextEdit, QFormLayout, QStyle
 
 from alu_gauntlet_helper.app_context import APP_CONTEXT
 from alu_gauntlet_helper.services.races import RaceView
 from alu_gauntlet_helper.services.tracks import TrackView
-from alu_gauntlet_helper.utils.utils import format_time, time_format_regex, parse_time
+from alu_gauntlet_helper.utils.utils import format_time, time_format_regex, parse_time, get_resource_path
 from alu_gauntlet_helper.views.components import EditDialog, ValidatedLineEdit, ItemCompleter, InputDebounce, \
-    ClearOnEscEventFilter, CLEAR_ON_ESC_FILTER
+    ClearOnEscEventFilter, CLEAR_ON_ESC_FILTER, vbox, res_to_pixmap, hbox
 
 
 class RaceDialog(EditDialog):
     def __init__(self, item: RaceView, action, parent=None):
         self.item = item
 
-        self.track_edit = ValidatedLineEdit(item.track_name)
+        self.track_edit = ValidatedLineEdit(f"{item.map_name} - {item.track_name}" if item.track_name else "")
         self.car_edit = ValidatedLineEdit(item.car_name)
         self.rank_edit = ValidatedLineEdit(str(item.rank) if item.rank else "")
         self.rank_edit.get_input().setValidator(QIntValidator(0, 10000))
@@ -85,6 +85,39 @@ class RaceDialog(EditDialog):
                         time=time, bad_timing=bad_timing, note=note)
 
 
+class RaceListWidget(QWidget):
+    def __init__(self, race:RaceView, parent=None):
+        super().__init__(parent)
+        self.map_label = QLabel(race.map_name)
+        self.track_label = QLabel(race.track_name)
+        self.car_label = QLabel(race.car_name)
+        self.rank_label = QLabel(str(race.rank))
+
+        time_font = QFont()
+        # time_font.setBold(True)
+        time_font.setPointSize(self.font().pointSize() + 4)
+
+        self.time_label = QLabel(format_time(race.time))
+        self.time_label.setFont(time_font)
+        self.created_at_label = QLabel(race.created_at.strftime("%d.%m.%Y %H:%M:%S"))
+
+        self.bad_timing_label = QLabel()
+        if race.bad_timing:
+            self.bad_timing_label.setPixmap(res_to_pixmap("icons/dislike.png", 18))
+
+        self.info_label = QLabel()
+        if race.note:
+            self.info_label.setPixmap(res_to_pixmap("icons/info.png", 18))
+            self.info_label.setToolTip(race.note)
+
+        self.layout = QHBoxLayout(self)
+        self.layout.addLayout(vbox([self.map_label, self.track_label]), stretch=20)
+        self.layout.addLayout(vbox([self.car_label, self.rank_label]), stretch=20)
+        self.layout.addWidget(self.time_label, stretch=10)
+        self.layout.addLayout(hbox([self.bad_timing_label, self.info_label]), stretch=8)
+        self.layout.addWidget(self.created_at_label, stretch=10)
+        self.setLayout(self.layout)
+
 class RacesTab(QWidget):
     def __init__(self):
         super().__init__()
@@ -123,9 +156,14 @@ class RacesTab(QWidget):
         track_query = self.track_query.text().strip()
         car_query = self.car_query.text().strip()
         for i in APP_CONTEXT.races_service.get_all(track_query, car_query):
-            item = QListWidgetItem(f"{i.id}: {i.map_name} {i.track_name} - {i.car_name} | {i.created_at.strftime("%d.%m.%Y %H:%M:%S")}")
+            race_widget = RaceListWidget(i)
+
+            item = QListWidgetItem(self.list_widget)
             item.setData(Qt.ItemDataRole.UserRole, i)
+            item.setSizeHint(race_widget.sizeHint())
+
             self.list_widget.addItem(item)
+            self.list_widget.setItemWidget(item, race_widget)
 
     def on_add(self):
         if RaceDialog(item=RaceView(), action=APP_CONTEXT.races_service.save, parent=self).exec():

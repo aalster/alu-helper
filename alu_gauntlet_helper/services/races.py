@@ -61,7 +61,7 @@ class RacesRepository:
                 sql += " WHERE c.name LIKE :car_query"
                 params = {"car_query": f"%{car_query}%"}
 
-            rows = conn.execute(sql + " ORDER BY r.created_at LIMIT 100", params).fetchall()
+            rows = conn.execute(sql + " ORDER BY r.created_at DESC LIMIT 100", params).fetchall()
             return [self.parse(row) for row in rows]
 
     def update(self, item: Race):

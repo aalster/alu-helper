@@ -2,9 +2,11 @@ import traceback
 from typing import Callable
 
 from PyQt6.QtCore import QRegularExpression, Qt, QTimer, QObject, QEvent
-from PyQt6.QtGui import QRegularExpressionValidator, QStandardItemModel, QStandardItem
+from PyQt6.QtGui import QRegularExpressionValidator, QStandardItemModel, QStandardItem, QPixmap
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLineEdit, QLabel, QDialog, QPushButton, QHBoxLayout, QLayout, \
     QCompleter
+
+from alu_gauntlet_helper.utils.utils import get_resource_path
 
 
 class ValidatedLineEdit(QWidget):
@@ -209,3 +211,25 @@ class ClearOnEscEventFilter(QObject):
         return super().eventFilter(obj, event)
 
 CLEAR_ON_ESC_FILTER = ClearOnEscEventFilter()
+
+def add_contents(layout, items, spacing=0):
+    # layout.setContentsMargins(0, 0, 0, 0)
+    layout.setSpacing(spacing)
+    for item in items:
+        if isinstance(item, QLayout):
+            layout.addLayout(item)
+        else:
+            layout.addWidget(item)
+    return layout
+
+def vbox(items, spacing=0) -> QVBoxLayout:
+    return add_contents(QVBoxLayout(), items, spacing=spacing)
+
+def hbox(items, spacing=0) -> QHBoxLayout:
+    return add_contents(QHBoxLayout(), items, spacing=spacing)
+
+def res_to_pixmap(path: str, size: int | None = None):
+    q_pixmap = QPixmap(get_resource_path(path))
+    if size:
+        q_pixmap = q_pixmap.scaled(size, size, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+    return q_pixmap
