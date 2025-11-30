@@ -6,7 +6,9 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QListWidget, QLin
 
 from alu_gauntlet_helper.app_context import APP_CONTEXT
 from alu_gauntlet_helper.services.cars import Car
-from alu_gauntlet_helper.views.components import EditDialog, ValidatedLineEdit, CLEAR_ON_ESC_FILTER
+from alu_gauntlet_helper.views.components.common import CLEAR_ON_ESC_FILTER
+from alu_gauntlet_helper.views.components.edit_dialog import EditDialog
+from alu_gauntlet_helper.views.components.validated_line_edit import ValidatedLineEdit
 
 
 class CarDialog(EditDialog):

@@ -7,7 +7,10 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QListWidget, QLin
 from alu_gauntlet_helper.app_context import APP_CONTEXT
 from alu_gauntlet_helper.services.maps import Map
 from alu_gauntlet_helper.utils.utils import save_data_image, DATA_PATH_MAPS, pixmap_cover
-from alu_gauntlet_helper.views.components import EditDialog, ValidatedLineEdit, CLEAR_ON_ESC_FILTER, ImageLineEdit
+from alu_gauntlet_helper.views.components.common import CLEAR_ON_ESC_FILTER
+from alu_gauntlet_helper.views.components.image_line_edit import ImageLineEdit
+from alu_gauntlet_helper.views.components.edit_dialog import EditDialog
+from alu_gauntlet_helper.views.components.validated_line_edit import ValidatedLineEdit
 
 
 class MapDialog(EditDialog):

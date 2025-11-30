@@ -8,8 +8,10 @@ from alu_gauntlet_helper.app_context import APP_CONTEXT
 from alu_gauntlet_helper.services.races import RaceView
 from alu_gauntlet_helper.services.tracks import TrackView
 from alu_gauntlet_helper.utils.utils import format_time, time_format_regex, parse_time
-from alu_gauntlet_helper.views.components import EditDialog, ValidatedLineEdit, ItemCompleter, InputDebounce, \
-    CLEAR_ON_ESC_FILTER, vbox, res_to_pixmap, hbox
+from alu_gauntlet_helper.views.components.common import InputDebounce, CLEAR_ON_ESC_FILTER, vbox, res_to_pixmap, hbox
+from alu_gauntlet_helper.views.components.edit_dialog import EditDialog
+from alu_gauntlet_helper.views.components.validated_line_edit import ValidatedLineEdit
+from alu_gauntlet_helper.views.components.item_completer import ItemCompleter
 
 
 class RaceDialog(EditDialog):
