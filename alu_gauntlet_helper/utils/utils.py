@@ -1,5 +1,7 @@
 import os
 import sys
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 from PyQt6 import QtCore
 from PyQt6.QtCore import QIODeviceBase, Qt, QPointF
@@ -12,6 +14,17 @@ def get_resource_path(relative_path: str) -> str:
     else:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, "resources", relative_path)
+
+LOCAL_TZ = datetime.now().astimezone().tzinfo
+
+def parse_utc_datetime(value):
+    if isinstance(value, str):
+        try:
+            return datetime.fromisoformat(value).replace(tzinfo=timezone.utc).astimezone(LOCAL_TZ)
+        except ValueError:
+            print(f"Failed to parse datetime: {value}")
+            return None
+    return value
 
 time_format_regex = r"^\d{0,2}:?\d{0,2}(?:\.\d{0,3})?$"
 

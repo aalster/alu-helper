@@ -5,6 +5,7 @@ from pydantic import BaseModel, field_validator
 from alu_gauntlet_helper.database import connect
 from alu_gauntlet_helper.services.cars import CarsService, Car
 from alu_gauntlet_helper.services.tracks import TracksService, TrackView
+from alu_gauntlet_helper.utils.utils import parse_utc_datetime
 
 
 class Race(BaseModel):
@@ -20,12 +21,7 @@ class Race(BaseModel):
     @field_validator("created_at", mode="before")
     @classmethod
     def parse_datetime(cls, v):
-        if isinstance(v, str):
-            try:
-                return datetime.fromisoformat(v)
-            except ValueError:
-                return None
-        return v
+        return parse_utc_datetime(v)
 
 class RaceView(Race):
     map_name: str = ""
